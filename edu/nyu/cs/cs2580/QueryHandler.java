@@ -67,7 +67,8 @@ class QueryHandler implements HttpHandler {
             } else if (ranker_type.equals("linear")){
               queryResponse = (ranker_type + " not implemented.");
             } else {
-              queryResponse = (ranker_type+" not implemented.");
+              //queryResponse = (ranker_type+" not implemented.");
+                Vector < ScoredDocument > sds = _ranker.runqueryNumView(query_map.get("query"));
             }
           } else {
             // @CS2580: The following is instructor's simple ranker that does not
