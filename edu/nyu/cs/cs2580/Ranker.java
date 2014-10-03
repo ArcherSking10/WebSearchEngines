@@ -1,9 +1,6 @@
 package edu.nyu.cs.cs2580;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Vector;
-import java.util.Scanner;
+import java.util.*;
 
 class Ranker {
     private Index _index;
@@ -51,14 +48,26 @@ class Ranker {
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
+    /**
+     * This method will be called from QueryHandler.java. The job of this method is to
+     * run the runqueryNumView(query, id) for every document in the corpus
+     * @param query The query words
+     * @return The sorted results based on NumView
+     */
     public Vector<ScoredDocument> runqueryNumView(String query) {
         Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
         for (int i = 0; i < _index.numDocs(); ++i) {
             retrieval_results.add(runqueryNumView(query, i));
         }
-        return retrieval_results;
+        return sort(retrieval_results);
     }
 
+    /**
+     * This method scores each document based on NumViews
+     * @param query The query words
+     * @param did The document id
+     * @return The scored document
+     */
     public ScoredDocument runqueryNumView(String query, int did) {
         // Get the document vector. For hw1, you don't have to worry about the
         // details of how index works.
@@ -74,7 +83,7 @@ class Ranker {
         for (int i = 0; i < _index.numDocs(); ++i) {
             retrieval_results.add(runqueryQL(query, i));
         }
-        return retrieval_results;
+        return sort(retrieval_results);
     }
 
     public ScoredDocument runqueryQL(String query, int did) {
@@ -109,5 +118,30 @@ class Ranker {
         }
 
         return new ScoredDocument(did, d.get_title_string(), score);
+    }
+
+    private Vector<ScoredDocument> sort(Vector<ScoredDocument> scoredDocuments) {
+        class scoreDocumentComparator implements Comparator<ScoredDocument> {
+
+            @Override
+            public int compare(ScoredDocument scoredDocument, ScoredDocument scoredDocument2) {
+
+                double score = scoredDocument._score;
+                double score2 = scoredDocument2._score;
+                if (score == score2) {
+                    return 0;
+                }
+                else if (score > score2) {
+                    return 1;
+                }
+                else {
+                    return -1;
+                }
+            }
+        }
+
+        Collections.sort(scoredDocuments, Collections.reverseOrder(new scoreDocumentComparator()));
+
+        return scoredDocuments;
     }
 }
