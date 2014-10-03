@@ -53,7 +53,7 @@ class QueryHandler implements HttpHandler {
 
         if ((uriPath != null) && (uriQuery != null)) {
             if (uriPath.equals("/search")) {
-                Map<String, String> query_map = getQueryMap(uriQuery);
+                    Map<String, String> query_map = getQueryMap(uriQuery);
                 Set<String> keys = query_map.keySet();
                 if (keys.contains("query")) {
                     if (keys.contains("ranker")) {
@@ -63,11 +63,11 @@ class QueryHandler implements HttpHandler {
                         if (ranker_type.equals("cosine")) {
                             queryResponse = (ranker_type + " not implemented.");
                         } else if (ranker_type.equals("QL")) {
-                            //queryResponse = (ranker_type + " not implemented.");
                             Vector<ScoredDocument> sds = _ranker.runqueryQL(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                         } else if (ranker_type.equals("phrase")) {
-                            queryResponse = (ranker_type + " not implemented.");
+                            Vector<ScoredDocument> sds = _ranker.runqueryPhrase(query_map.get("query"));
+                            queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                         } else if (ranker_type.equals("linear")) {
                             queryResponse = (ranker_type + " not implemented.");
                         } else {

@@ -51,6 +51,7 @@ class Ranker {
     /**
      * This method will be called from QueryHandler.java. The job of this method is to
      * run the runqueryNumView(query, id) for every document in the corpus
+     *
      * @param query The query words
      * @return The sorted results based on NumView
      */
@@ -64,8 +65,9 @@ class Ranker {
 
     /**
      * This method scores each document based on NumViews
+     *
      * @param query The query words
-     * @param did The document id
+     * @param did   The document id
      * @return The scored document
      */
     public ScoredDocument runqueryNumView(String query, int did) {
@@ -74,9 +76,55 @@ class Ranker {
         Document d = _index.getDoc(did);
         Vector<String> dv = d.get_title_vector();
 
-        double score=d.get_numviews();
+        double score = d.get_numviews();
         return new ScoredDocument(did, d.get_title_string(), score);
     }
+
+    public Vector<ScoredDocument> runqueryPhrase(String query) {
+        Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
+        for (int i = 0; i < _index.numDocs(); ++i) {
+            retrieval_results.add(runqueryPhrase(query, i));
+        }
+        return sort(retrieval_results);
+    }
+
+    public ScoredDocument runqueryPhrase(String query, int did) {
+
+        // Build query vector
+        Scanner s = new Scanner(query);
+        Vector<String> qv = new Vector<String>();
+        while (s.hasNext()) {
+            String term = s.next();
+            qv.add(term);
+        }
+
+        // Get the document vector.
+        Document d = _index.getDoc(did);
+        Vector<String> dv = d.get_body_vector();
+
+        double score = 0.0;
+        if (qv.size() == 1) {
+            // Score the document as a unigram
+            for (int i = 0; i < dv.size(); ++i) {
+                for (int j = 0; j < qv.size(); ++j) {
+                    if (dv.get(i).equals(qv.get(j))) {
+                        score = 1.0;
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (int i = 0; i < qv.size() - 1; i++) {
+                for (int j = 0; j < dv.size() - 1; j++) {
+                    if (dv.get(j).equals(qv.get(i)) && dv.get(j + 1).equals(qv.get(i + 1)))
+                        score = score + 1;
+                }
+            }
+        }
+
+        return new ScoredDocument(did, d.get_title_string(), score);
+    }
+
 
     public Vector<ScoredDocument> runqueryQL(String query) {
         Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
@@ -99,22 +147,26 @@ class Ranker {
         Document d = _index.getDoc(did);
         Vector<String> dv = d.get_body_vector();
 
-        Long totalWordsInDocument = 0l;
-        HashMap<String, Integer> wordFrequency = new HashMap<String, Integer>();
+        /*HashMap<String, Integer> wordFrequency = new HashMap<String, Integer>();
         for (String word : dv) {
-            totalWordsInDocument++;
             if (!wordFrequency.containsKey(word)) {
                 wordFrequency.put(word, 1);
-            }
-            else {
+            } else {
                 wordFrequency.put(word, wordFrequency.get(word) + 1);
             }
-        }
+        }*/
 
         double score = 0.0;
-        for (String wordInQuery : dv) {
-            score = score + Math.log(((1-lambda)*(wordFrequency.get(wordInQuery)/totalWordsInDocument))
-                    +(lambda * _index.termFrequency(wordInQuery)/_index.termFrequency()));
+        for (String wordInQuery : qv) {
+            int count = 0;
+            for (String wordInDocument : dv) {
+                if(wordInQuery.equals(wordInDocument)) {
+                    count++;
+                }
+            }
+            double doclike = (double) count / (double) dv.size();
+            double termlike = (double) _index.termFrequency(wordInQuery) / (double) _index.termFrequency();
+            score = score + Math.log(((1-lambda) * doclike) + (lambda * termlike));
         }
 
         return new ScoredDocument(did, d.get_title_string(), score);
@@ -130,17 +182,15 @@ class Ranker {
                 double score2 = scoredDocument2._score;
                 if (score == score2) {
                     return 0;
-                }
-                else if (score > score2) {
-                    return 1;
-                }
-                else {
+                } else if (score > score2) {
                     return -1;
+                } else {
+                    return 1;
                 }
             }
         }
 
-        Collections.sort(scoredDocuments, Collections.reverseOrder(new scoreDocumentComparator()));
+        Collections.sort(scoredDocuments, new scoreDocumentComparator());
 
         return scoredDocuments;
     }
