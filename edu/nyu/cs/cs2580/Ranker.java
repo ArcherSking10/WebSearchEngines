@@ -74,9 +74,9 @@ class Ranker {
         // Get the document vector. For hw1, you don't have to worry about the
         // details of how index works.
         Document d = _index.getDoc(did);
-        Vector<String> dv = d.get_title_vector();
 
         double score = d.get_numviews();
+
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
@@ -125,7 +125,12 @@ class Ranker {
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
-
+    /**
+     * This method will be called from QueryHandler.java. The job of this method is to
+     * run the runqueryQL(query, id) for every document in the corpus
+     * @param query the query words
+     * @return sorted list of scored documents
+     */
     public Vector<ScoredDocument> runqueryQL(String query) {
         Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
         for (int i = 0; i < _index.numDocs(); ++i) {
@@ -134,6 +139,12 @@ class Ranker {
         return sort(retrieval_results);
     }
 
+    /**
+     * Method for scoring documents based on QL
+     * @param query the query words
+     * @param did the document id
+     * @return the scored document
+     */
     public ScoredDocument runqueryQL(String query, int did) {
 
         float lambda = 0.5f;
@@ -146,15 +157,6 @@ class Ranker {
 
         Document d = _index.getDoc(did);
         Vector<String> dv = d.get_body_vector();
-
-        /*HashMap<String, Integer> wordFrequency = new HashMap<String, Integer>();
-        for (String word : dv) {
-            if (!wordFrequency.containsKey(word)) {
-                wordFrequency.put(word, 1);
-            } else {
-                wordFrequency.put(word, wordFrequency.get(word) + 1);
-            }
-        }*/
 
         double score = 0.0;
         for (String wordInQuery : qv) {
@@ -172,6 +174,9 @@ class Ranker {
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
+    /*
+     * Method to sort the scored documents
+     */
     private Vector<ScoredDocument> sort(Vector<ScoredDocument> scoredDocuments) {
         class scoreDocumentComparator implements Comparator<ScoredDocument> {
 
