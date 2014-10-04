@@ -140,7 +140,6 @@ class Ranker {
 
         HashMap<String, Integer> query_weight_map = new HashMap<String, Integer>();
         HashMap<String, Integer> document_weight_map = new HashMap<String, Integer>();
-        Vector<String> query_vector = new Vector<String>();
 
         Document d = _index.getDoc(did);
 
@@ -153,7 +152,6 @@ class Ranker {
         while(s.hasNext()) {
             String query_term=s.next();
             if(_index.termFrequency(query_term)>0) {
-                query_vector.add(query_term);
                 if(query_weight_map.containsKey(query_term)) {
                     //Increment the query weight for the term if it already exists
                     query_weight_map.put(query_term, query_weight_map.get(query_term)+1);
