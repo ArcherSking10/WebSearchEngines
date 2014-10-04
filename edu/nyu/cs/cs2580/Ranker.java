@@ -140,6 +140,7 @@ class Ranker {
 
         HashMap<String, Integer> query_weight_map = new HashMap<String, Integer>();
         HashMap<String, Integer> document_weight_map = new HashMap<String, Integer>();
+        Vector<String> query_vector = new Vector<String>();
 
         Document d = _index.getDoc(did);
 
@@ -152,6 +153,7 @@ class Ranker {
         while(s.hasNext()) {
             String query_term=s.next();
             if(_index.termFrequency(query_term)>0) {
+                query_vector.add(query_term);
                 if(query_weight_map.containsKey(query_term)) {
                     //Increment the query weight for the term if it already exists
                     query_weight_map.put(query_term, query_weight_map.get(query_term)+1);
@@ -207,6 +209,28 @@ class Ranker {
 
         return new ScoredDocument(did, d.get_title_string(), score);
     }
+
+    public Vector<ScoredDocument> runqueryLinear(String query) {
+        Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
+        for (int i = 0; i < _index.numDocs(); ++i) {
+            retrieval_results.add(runqueryLinear(query, i));
+        }
+        return sort(retrieval_results);
+    }
+
+    public ScoredDocument runqueryLinear(String query, int did) {
+        ScoredDocument cosine = runqueryCosine(query, did);
+        ScoredDocument QL = runqueryQL(query, did);
+        ScoredDocument phrase = runqueryPhrase(query, did);
+        ScoredDocument numviews = runqueryNumView(query, did);
+
+        double score = Constants.BETA_1 * cosine.getScore() + Constants.BETA_2 * QL.getScore()
+                + Constants.BETA_3 * phrase.getScore() + Constants.BETA_4 * numviews.getScore();
+
+        return new ScoredDocument(did, _index.getDoc(did).get_title_string(), score);
+    }
+
+
 
     /**
      * This method will be called from QueryHandler.java. The job of this method is to
@@ -284,6 +308,8 @@ class Ranker {
 
         return scoredDocuments;
     }
+
+
 
     public double cosineRanker(Vector < String > qv, HashMap<String, Integer> query_weight, int did){
         Document d = _index.getDoc(did);

@@ -4,10 +4,11 @@ import java.io.*;
 
 public class FileUtil {
 
-    private String rootPath;
+    private static String rootPath;
 
-    public FileUtil() {
-        rootPath = "../../../../results/";
+   // public FileUtil()
+    static{
+        rootPath = "./results/";
         File file = new File(rootPath);
 
         //Create the path if the path does not exist
@@ -16,7 +17,7 @@ public class FileUtil {
         }
     }
 
-    public String read(String filename, String results) {
+    public static String read(String filename, String results) {
         StringBuilder fileContents = new StringBuilder();
         createFile(filename);
         try {
@@ -37,10 +38,9 @@ public class FileUtil {
         return fileContents.toString();
     }
 
-    public void write(String filename, String results){
+    public static void write(String filename, String results){
         createFile(filename);
         try{
-            FileWriter fileWriter = new FileWriter(filename, true);
             BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+filename,true));
             bufferWriter.write(results);
             bufferWriter.close();
@@ -49,7 +49,7 @@ public class FileUtil {
         }
     }
 
-    private void createFile(String filename) {
+    private static void createFile(String filename) {
         File file = new File(rootPath+filename);
         if(!file.exists()){
             try {

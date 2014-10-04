@@ -63,17 +63,23 @@ class QueryHandler implements HttpHandler {
                         if (ranker_type.equals("cosine")) {
                             Vector<ScoredDocument> sds = _ranker.runqueryCosine(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+                            FileUtil.write("hw1.1-vsm.tsv", queryResponse);
                         } else if (ranker_type.equals("QL")) {
                             Vector<ScoredDocument> sds = _ranker.runqueryQL(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+                            FileUtil.write("hw1.1-ql.tsv", queryResponse);
                         } else if (ranker_type.equals("phrase")) {
                             Vector<ScoredDocument> sds = _ranker.runqueryPhrase(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+                            FileUtil.write("hw1.1-phrase.tsv", queryResponse);
                         } else if (ranker_type.equals("linear")) {
-                            queryResponse = (ranker_type + " not implemented.");
+                            Vector<ScoredDocument> sds = _ranker.runqueryLinear(query_map.get("query"));
+                            queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+                            FileUtil.write("hw1.2-linear.tsv", queryResponse);
                         } else {
                             Vector<ScoredDocument> sds = _ranker.runqueryNumView(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+                            FileUtil.write("hw1.1-numviews.tsv", queryResponse);
                         }
                     } else {
                         // @CS2580: The following is instructor's simple ranker that does not
