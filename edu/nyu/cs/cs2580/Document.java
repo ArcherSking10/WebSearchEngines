@@ -43,7 +43,7 @@ class Document {
 
     readTermVector(_titleString, _title);
     readTermVector(s.next(), _body);
-    
+
     HashSet < Integer > unique_terms = new HashSet < Integer >();
     for (int i = 0; i < _title.size(); ++i){
       int idx = _title.get(i);
@@ -109,6 +109,7 @@ class Document {
       }
       tv.add(idx);
     }
+
     return;
   }
 }

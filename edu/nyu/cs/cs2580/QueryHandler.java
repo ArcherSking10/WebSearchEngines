@@ -61,7 +61,8 @@ class QueryHandler implements HttpHandler {
                         // @CS2580: Invoke different ranking functions inside your
                         // implementation of the Ranker class.
                         if (ranker_type.equals("cosine")) {
-                            queryResponse = (ranker_type + " not implemented.");
+                            Vector<ScoredDocument> sds = _ranker.runqueryCosine(query_map.get("query"));
+                            queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                         } else if (ranker_type.equals("QL")) {
                             Vector<ScoredDocument> sds = _ranker.runqueryQL(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
