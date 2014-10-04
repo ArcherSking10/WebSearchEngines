@@ -280,7 +280,6 @@ class Ranker {
             score = score + Math.log(((1-lambda) * doclike) + (lambda * termlike));
         }
 
-        score = Math.pow(Math.E, score);
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
