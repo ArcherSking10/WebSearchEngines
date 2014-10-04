@@ -100,7 +100,9 @@ class Ranker {
 
         // Get the document vector.
         Document d = _index.getDoc(did);
-        Vector<String> dv = d.get_body_vector();
+        Vector<String> dv = new Vector<String>();
+        dv.addAll(d.get_title_vector());
+        dv.addAll(d.get_body_vector());
 
         double score = 0.0;
         if (qv.size() == 1) {
@@ -241,7 +243,9 @@ class Ranker {
         }
 
         Document d = _index.getDoc(did);
-        Vector<String> dv = d.get_body_vector();
+        Vector<String> dv = new Vector<String>();
+        dv.addAll(d.get_title_vector());
+        dv.addAll(d.get_body_vector());
 
         double score = 0.0;
         for (String wordInQuery : qv) {
