@@ -16,4 +16,8 @@ class ScoredDocument {
     return new String(
       Integer.toString(_did) + "\t" + _title + "\t" + Double.toString(_score));
   }
+
+    double getScore() {
+        return  _score;
+    }
 }

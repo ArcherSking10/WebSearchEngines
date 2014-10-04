@@ -208,6 +208,28 @@ class Ranker {
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
+    public Vector<ScoredDocument> runqueryLinear(String query) {
+        Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
+        for (int i = 0; i < _index.numDocs(); ++i) {
+            retrieval_results.add(runqueryLinear(query, i));
+        }
+        return sort(retrieval_results);
+    }
+
+    public ScoredDocument runqueryLinear(String query, int did) {
+        ScoredDocument cosine = runqueryCosine(query, did);
+        ScoredDocument QL = runqueryQL(query, did);
+        ScoredDocument phrase = runqueryPhrase(query, did);
+        ScoredDocument numviews = runqueryNumView(query, did);
+
+        double score = Constants.BETA_1 * cosine.getScore() + Constants.BETA_2 * QL.getScore()
+                + Constants.BETA_3 * phrase.getScore() + Constants.BETA_4 * numviews.getScore();
+
+        return new ScoredDocument(did, _index.getDoc(did).get_title_string(), score);
+    }
+
+
+
     /**
      * This method will be called from QueryHandler.java. The job of this method is to
      * run the runqueryQL(query, id) for every document in the corpus
@@ -256,6 +278,7 @@ class Ranker {
             score = score + Math.log(((1-lambda) * doclike) + (lambda * termlike));
         }
 
+        score = Math.pow(Math.E, score);
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
@@ -284,6 +307,8 @@ class Ranker {
 
         return scoredDocuments;
     }
+
+
 
     public double cosineRanker(Vector < String > qv, HashMap<String, Integer> query_weight, int did){
         Document d = _index.getDoc(did);

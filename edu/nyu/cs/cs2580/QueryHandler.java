@@ -70,7 +70,8 @@ class QueryHandler implements HttpHandler {
                             Vector<ScoredDocument> sds = _ranker.runqueryPhrase(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                         } else if (ranker_type.equals("linear")) {
-                            queryResponse = (ranker_type + " not implemented.");
+                            Vector<ScoredDocument> sds = _ranker.runqueryLinear(query_map.get("query"));
+                            queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                         } else {
                             Vector<ScoredDocument> sds = _ranker.runqueryNumView(query_map.get("query"));
                             queryResponse = queryResponseGenerator(sds, query_map.get("query"));
