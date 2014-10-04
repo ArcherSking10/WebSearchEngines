@@ -208,8 +208,6 @@ class Ranker {
         return new ScoredDocument(did, d.get_title_string(), score);
     }
 
-
-
     /**
      * This method will be called from QueryHandler.java. The job of this method is to
      * run the runqueryQL(query, id) for every document in the corpus
@@ -286,8 +284,6 @@ class Ranker {
 
         return scoredDocuments;
     }
-
-
 
     public double cosineRanker(Vector < String > qv, HashMap<String, Integer> query_weight, int did){
         Document d = _index.getDoc(did);
