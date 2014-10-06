@@ -62,7 +62,7 @@ public class FileUtil {
     //For Render Logging
     public void writeRenderLogs(int sessionId, String query, Vector<ScoredDocument> documents){
         try {
-            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log",true));
+            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log.tsv",true));
             for(ScoredDocument doc : documents){
                 String line = sessionId+"\t"+query+"\t"+doc._did+"\t"+"RENDER"+"\t"+System.currentTimeMillis()+"ms\r\n";
                 bufferWriter.append(line);
@@ -76,7 +76,7 @@ public class FileUtil {
 
     public void writeClickLogs(String line) {
         try{
-            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log",true));
+            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log.tsv",true));
             bufferWriter.append(line);
             bufferWriter.close();
         } catch (IOException e) {
