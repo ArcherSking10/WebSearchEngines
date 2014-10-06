@@ -110,21 +110,19 @@ class QueryHandler implements HttpHandler {
                 }
             } else if(uriPath.equals("/url")) {
                 Map<String, String> query_map = getQueryMap(uriQuery);
-                int sessionId = 0, did = 0;
-                String query=null;
-
+                int sessionId, did;
+                String query,body="";
+                System.out.println(query_map);
                 if(query_map.containsKey("sessionId")&&query_map.containsKey("did")&&query_map.containsKey("query")){
-                    Document d = _ranker.getDocument(did);
                     sessionId = Integer.parseInt(query_map.get("sessionId"), 32);
                     did = Integer.parseInt(query_map.get("did"), 32);
                     query = query_map.get("query").replace("+", " ");
-                    String line=sessionId+"\t"+query+"\t"+did+"\t"+"CLICK"+"\t"+System.currentTimeMillis();
-                    new FileUtil().writeClickLogs(line+"\n");
+                    String line=sessionId+"\t"+query+"\t"+did+"\t"+"CLICK"+"\t"+System.currentTimeMillis()+"ms\r\n";
+                    new FileUtil().writeClickLogs(line);
 
+                    Document d = _ranker.getDocument(did);
                     queryResponse = line+"\n\n";
-
                     queryResponse+="Title\n"+d.get_title_string()+"\n\n";
-                    String body="";
                     for(String terms : d.get_body_vector()){
                         body+=terms+" ";
                     }

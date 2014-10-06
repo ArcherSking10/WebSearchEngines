@@ -12,7 +12,7 @@ public class FileUtil {
         rootPath = "./results/";
         File file = new File(rootPath);
 
-        File logs = new File(rootPath+"hw1.4-log");
+        File logs = new File(rootPath+"hw1.4-log.tsv");
 
         if(!logs.exists()) {
             try {
