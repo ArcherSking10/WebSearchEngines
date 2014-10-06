@@ -101,7 +101,6 @@ class Ranker {
         // Get the document vector.
         Document d = _index.getDoc(did);
         Vector<String> dv = new Vector<String>();
-        dv.addAll(d.get_title_vector());
         dv.addAll(d.get_body_vector());
 
         double score = 0.0;
@@ -145,7 +144,7 @@ class Ranker {
         Document d = _index.getDoc(did);
 
         //Document vectors.
-        Vector < String > dv = d.get_title_vector();
+//        Vector < String > dv = d.get_title_vector();
         Vector < String > db = d.get_body_vector();
 
         //Compute query weight and create query vector
@@ -164,13 +163,13 @@ class Ranker {
         }
 
         //Document weight
-        for(int i = 0; i < dv.size(); i++) {
-            if(document_weight_map.containsKey(dv.get(i))){
-                document_weight_map.put(dv.get(i), document_weight_map.get(dv.get(i))+1);
-            }else{
-                document_weight_map.put(dv.get(i), 1);
-            }
-        }
+//        for(int i = 0; i < dv.size(); i++) {
+//            if(document_weight_map.containsKey(dv.get(i))){
+//                document_weight_map.put(dv.get(i), document_weight_map.get(dv.get(i))+1);
+//            }else{
+//                document_weight_map.put(dv.get(i), 1);
+//            }
+//        }
 
         for(int i = 0; i < db.size(); i++) {
             if(document_weight_map.containsKey(db.get(i))) {
@@ -264,7 +263,6 @@ class Ranker {
 
         Document d = _index.getDoc(did);
         Vector<String> dv = new Vector<String>();
-        dv.addAll(d.get_title_vector());
         dv.addAll(d.get_body_vector());
 
         double score = 0.0;
@@ -324,18 +322,18 @@ class Ranker {
         double cosine = 0.0;
 
         HashMap<String, Integer>doc_frequency = new HashMap<String, Integer>();
-        Vector < String > dv = d.get_title_vector();
+//        Vector < String > dv = d.get_title_vector();
         Vector < String > db = d.get_body_vector();
 
 
         /*get current document term and frequency*/
-        for(int i = 0; i < dv.size(); i++){
-            if(doc_frequency.containsKey(dv.get(i))){
-                doc_frequency.put(dv.get(i), doc_frequency.get(dv.get(i))+1);
-            }else{
-                doc_frequency.put(dv.get(i), 1);
-            }
-        }
+//        for(int i = 0; i < dv.size(); i++){
+//            if(doc_frequency.containsKey(dv.get(i))){
+//                doc_frequency.put(dv.get(i), doc_frequency.get(dv.get(i))+1);
+//            }else{
+//                doc_frequency.put(dv.get(i), 1);
+//            }
+//        }
 
         for(int i = 0; i < db.size(); i++){
             if(doc_frequency.containsKey(db.get(i))){
