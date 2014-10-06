@@ -91,11 +91,8 @@ class QueryHandler implements HttpHandler {
                     } else {
                         // @CS2580: The following is instructor's simple ranker that does not
                         // use the Ranker class.
-                       sds = _ranker.runquery(query_map.get("query"));
+                        sds = _ranker.runquery(query_map.get("query"));
                     }
-
-                    //Write ranker output to file
-                    FileUtil.write(fileName, queryResponse);
 
                     //Write render details to log file
                     new FileUtil().writeRenderLogs(sessionId, query_map.get("query"), sds);
@@ -106,13 +103,15 @@ class QueryHandler implements HttpHandler {
                         responseType = "text/html";
                     } else {
                         queryResponse = queryResponseGenerator(sds, query_map.get("query"));
+
+                        //Write ranker output to file
+                        FileUtil.write(fileName, queryResponse);
                     }
                 }
             } else if(uriPath.equals("/url")) {
                 Map<String, String> query_map = getQueryMap(uriQuery);
                 int sessionId, did;
                 String query,body="";
-                System.out.println(query_map);
                 if(query_map.containsKey("sessionId")&&query_map.containsKey("did")&&query_map.containsKey("query")){
                     sessionId = Integer.parseInt(query_map.get("sessionId"), 32);
                     did = Integer.parseInt(query_map.get("did"), 32);

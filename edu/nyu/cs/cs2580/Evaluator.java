@@ -61,7 +61,7 @@ class Evaluator {
                     if(grade.equals("Bad")) {
                         rel2= 0.0;
                     }
-                    if (relevance_judgments.containsKey(query) == false){
+                    if (!relevance_judgments.containsKey(query)){
                         HashMap < Integer , Double > qr = new HashMap < Integer , Double >();
                         relevance_judgments.put(query,qr);
                         HashMap < Integer , Double > qr2 = new HashMap < Integer , Double >();
@@ -76,7 +76,7 @@ class Evaluator {
                 reader.close();
             }
         } catch (IOException ioe){
-            System.err.println("Oops " + ioe.getMessage());
+            ioe.printStackTrace();
         }
     }
 
@@ -99,10 +99,6 @@ class Evaluator {
                 Scanner s = new Scanner(line).useDelimiter("\t");
                 query = s.next();
                 int did = Integer.parseInt(s.next());
-                String title = s.next();
-                double rel = Double.parseDouble(s.next());
-
-
 
                 if (!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
@@ -114,15 +110,12 @@ class Evaluator {
                 ++N;
             }
 
-            File file = new File (".//results/input-to-evaluator.tsv");
+            File file = new File ("../results/input-to-evaluator.tsv");
             if (file.exists()) {
                 file.delete();
             }
             FileUtil.write("input-to-evaluator.tsv", input.toString());
             // CALL THE EVALUATORS
-
-            //System.out.println(Double.toString(RR/N));
-
 
             double v1 = evaluatePrecision(1, relevance_judgments, "./results/input-to-evaluator.tsv");
             double v2 = evaluatePrecision(5, relevance_judgments, "./results/input-to-evaluator.tsv");
@@ -154,7 +147,7 @@ class Evaluator {
             FileUtil.write("output-file-please-rename.tsv", output.toString());
 
         } catch (Exception e){
-            System.err.println("Error:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
