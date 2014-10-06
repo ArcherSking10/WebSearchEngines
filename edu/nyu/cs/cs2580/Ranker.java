@@ -244,7 +244,7 @@ class Ranker {
 
         score = totDocQueryFreq/(totDocFreq * totQueryFreq);
 
-        if(score==Double.NaN) {
+        if(score.equals(Double.NaN)) {
             score = 0.0;
         }
 
