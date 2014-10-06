@@ -9,7 +9,7 @@ public class FileUtil {
    // public FileUtil()
     static{
         rootPath = "./results/";
-        File file = new File(rootPath);
+         File file = new File(rootPath);
 
         //Create the path if the path does not exist
         if(!file.exists()) {
