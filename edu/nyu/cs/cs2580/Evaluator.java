@@ -47,19 +47,19 @@ class Evaluator {
                         rel = 1.0;
                     }
                     if (grade.equals("Perfect")) {
-                        rel2= 10;
+                        rel2= 10.0;
                     }
                     if(grade.equals("Excellent")) {
-                        rel2= 7;
+                        rel2= 7.0;
                     }
                     if(grade.equals("Good")) {
-                        rel2= 5;
+                        rel2= 5.0;
                     }
                     if(grade.equals("Fair")) {
-                        rel2= 1;
+                        rel2= 1.0;
                     }
                     if(grade.equals("Bad")) {
-                        rel2= 0;
+                        rel2= 0.0;
                     }
                     if (relevance_judgments.containsKey(query) == false){
                         HashMap < Integer , Double > qr = new HashMap < Integer , Double >();
@@ -104,11 +104,11 @@ class Evaluator {
 
 
 
-                if (relevance_judgments.containsKey(query) == false){
+                if (!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
                 HashMap < Integer , Double > qr = relevance_judgments.get(query);
-                if (qr.containsKey(did) != false){
+                if (qr.containsKey(did)){
                     RR += qr.get(did);
                 }
                 ++N;
@@ -133,7 +133,7 @@ class Evaluator {
             double v7 = evaluateFMeasure(1, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
             double v8 = evaluateFMeasure(5, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
             double v9 = evaluateFMeasure(10, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
-            HashMap<Double,Double> ss = evaluatePrecisionRecallGraph(relevance_judgments, "./results/input-to-evaluator.tsv");
+            HashMap<Double,Double> prg = evaluatePrecisionRecallGraph(relevance_judgments, "./results/input-to-evaluator.tsv");
             double v10 = evaluateAveragePrecision(relevance_judgments, "./results/input-to-evaluator.tsv");
             double v11 = evaluateNDCG(1, relevance_judgments_2, "./results/input-to-evaluator.tsv");
             double v12 = evaluateNDCG(5, relevance_judgments_2, "./results/input-to-evaluator.tsv");
@@ -146,7 +146,7 @@ class Evaluator {
             output.append(query+"\t");
             output.append(v1 +"\t" +  v2 +"\t" + v3+"\t" +v4+"\t" +v5+"\t" +v6+"\t" +v7+"\t" +v8+"\t" +v9+"\t");
             for(double i = 0.0; i <= 1.0; i = i + 0.1){
-                double t = ss.get(i);
+                double t = prg.get(i);
                 output.append(t +"\t");
             }
             output.append(+v10+"\t" +v11+"\t" +v12+"\t" +v13+"\t" +v14);
@@ -171,9 +171,8 @@ class Evaluator {
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title  = s.next();
-                double rel = s.nextDouble();
-                if(relevance_judgments.containsKey(query) == false){
+
+                if(!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
                 HashMap<Integer,Double> qr = relevance_judgments.get(query);
@@ -208,9 +207,8 @@ class Evaluator {
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title  = s.next();
-                double rel = s.nextDouble();
-                if(relevance_judgments.containsKey(query) == false){
+
+                if(!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
                 HashMap<Integer,Double> qr = relevance_judgments.get(query);
@@ -262,18 +260,18 @@ class Evaluator {
                                                    String path){
         double value = 0.0;
         double AP = 0.0;
+        int RR = 0;
+        int i=0;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
-            int RR = 0;
-            int i=0;
+
             String readLineString = reader.readLine();
             while(readLineString!=null){
                 i++;
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title  = s.next();
-                double rel = s.nextDouble();
+
                 if(!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
@@ -285,7 +283,7 @@ class Evaluator {
                 }
             }
             if(RR != 0){
-                value = (double)AP/RR;
+                value = AP/RR;
             }
             reader.close();
         } catch (FileNotFoundException e) {
@@ -302,22 +300,22 @@ class Evaluator {
                                                  String path){
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
-            int i=0;
+            int count=0;
             String readLineString = null;
             while(reader.readLine()!=null){
-                i++;
+                count++;
                 readLineString = reader.readLine();
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title  = s.next();
-                double rel = s.nextDouble();
-                if(relevance_judgments.containsKey(query) == false){
+
+                if(!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
+
                 HashMap<Integer,Double> qr = relevance_judgments.get(query);
                 if(qr.containsKey(did)){
-                    return reciprocal((double)i);
+                    return reciprocal((double)count);
                 }
             }
             reader.close();
@@ -348,9 +346,8 @@ class Evaluator {
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title = s.next();
-                double rel = s.nextDouble();
-                if (relevance_judgments.containsKey(query) == false){
+
+                if (!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
                 HashMap < Integer , Double > qr = relevance_judgments.get(query);
@@ -360,7 +357,7 @@ class Evaluator {
                         countRelevance++;
                     }
                 }
-                if (qr.containsKey(did) != false){
+                if (qr.containsKey(did)){
                     RR++;
                 }
                 recall=(double)RR/countRelevance;
@@ -381,7 +378,7 @@ class Evaluator {
                         max=PR.get(key);
                     }
                 }
-                value.put( j ,max);
+                value.put(j ,max);
             }
             reader.close();
         } catch (FileNotFoundException e) {
@@ -394,10 +391,10 @@ class Evaluator {
         return value;
     }
 
-
     public static double evaluateNDCG(int k, HashMap<String, HashMap<Integer,Double>> relevance_judgments_2,
                                       String path){
-        double NDCG = 0.0;
+        double NDCG = 0.0, IDCG=0.0;
+
         List<Double> relevance = new ArrayList<Double>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(path));
@@ -408,9 +405,8 @@ class Evaluator {
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
-                String title  = s.next();
-                double rel = s.nextDouble();
-                if(relevance_judgments_2.containsKey(query) == false){
+
+                if(!relevance_judgments_2.containsKey(query)){
                     throw new IOException("query not found");
                 }
                 HashMap<Integer,Double> qr = relevance_judgments_2.get(query);
@@ -428,7 +424,6 @@ class Evaluator {
                 }
             }
 
-            double IDCG=0.0;
             Collections.sort(relevance, Collections.reverseOrder());
             for (int i=0; i<k; i++) {
                 if (i==0) {

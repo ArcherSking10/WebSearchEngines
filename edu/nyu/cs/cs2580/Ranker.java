@@ -137,6 +137,81 @@ class Ranker {
     }
 
     public ScoredDocument runqueryCosine(String query, int did) {
+        double cumulativeWt = 0.0, cumulativeQW = 0.0, score=0.0, dotProd = 0.0, magnitude = 0.0;
+
+        HashMap<String, Integer> query_weight_map = new HashMap<String, Integer>();
+        HashMap<String, Integer> document_weight_map = new HashMap<String, Integer>();
+        Vector<String> query_vector = new Vector<String>();
+
+        Document d = _index.getDoc(did);
+
+        //Document vectors.
+        Vector < String > dv = d.get_title_vector();
+        Vector < String > db = d.get_body_vector();
+
+        //Compute query weight and create query vector
+        Scanner s = new Scanner(query);
+        while(s.hasNext()) {
+            String query_term=s.next();
+            if(_index.termFrequency(query_term)>0) {
+                query_vector.add(query_term);
+                if(query_weight_map.containsKey(query_term)) {
+                    //Increment the query weight for the term if it already exists
+                    query_weight_map.put(query_term, query_weight_map.get(query_term)+1);
+                } else {
+                    query_weight_map.put(query_term, 1);
+                }
+            }
+        }
+
+        //Document weight
+        for(int i = 0; i < dv.size(); i++) {
+            if(document_weight_map.containsKey(dv.get(i))){
+                document_weight_map.put(dv.get(i), document_weight_map.get(dv.get(i))+1);
+            }else{
+                document_weight_map.put(dv.get(i), 1);
+            }
+        }
+
+        for(int i = 0; i < db.size(); i++) {
+            if(document_weight_map.containsKey(db.get(i))) {
+                document_weight_map.put(db.get(i), document_weight_map.get(db.get(i))+1);
+            } else{
+                document_weight_map.put(db.get(i), 1);
+            }
+        }
+
+        for (int i = 0; i < db.size(); ++i){
+            int tf = 0, df;
+            double idf, weight, qw;
+
+            df = Document.documentFrequency(db.get(i));
+
+            idf = 1+Math.log(_index.numDocs()/df)/Math.log(2);
+
+            if(document_weight_map.containsKey(db.get(i))){
+                tf = document_weight_map.get(db.get(i));
+            }
+
+            weight = tf*idf;
+            cumulativeWt += Math.pow(weight, 2);
+            if(query_weight_map.containsKey(db.get(i))){
+                qw = query_weight_map.get(db.get(i))*idf;
+                dotProd += qw * weight;
+                cumulativeQW += Math.pow(qw, 2);
+            }
+        }
+
+        magnitude = cumulativeQW * cumulativeWt;
+
+        if((magnitude) != 0){
+            score = dotProd/Math.sqrt(magnitude);
+        }
+
+        return new ScoredDocument(did, d.get_title_string(), score);
+    }
+
+    /*public ScoredDocument runqueryCosine(String query, int did) {
         double score = 0.0, totQueryFreq = 0.0, totDocFreq = 0.0, totDocQueryFreq = 0.0;
         HashMap<String,Double> queryTF, docTF = null;
 
@@ -253,7 +328,7 @@ class Ranker {
         }
 
         return docTF;
-    }
+    }*/
 
     public Vector<ScoredDocument> runqueryLinear(String query) {
         Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
