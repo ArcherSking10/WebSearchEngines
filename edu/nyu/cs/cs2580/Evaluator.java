@@ -1,11 +1,6 @@
 package edu.nyu.cs.cs2580;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 class Evaluator {
@@ -24,25 +19,9 @@ class Evaluator {
         // first read the relevance judgments into the HashMap
         readRelevanceJudgments(p,relevance_judgments, relevance_judgments_2);
         // now evaluate the results from stdin
-        evaluateStdin(relevance_judgments, System.in);
+        evaluateStdin(relevance_judgments, relevance_judgments_2, System.in);
 
-        double v1 = evaluatePrecision(1, relevance_judgments, System.in);
-        double v2 = evaluatePrecision(5, relevance_judgments, System.in);
-        double v3 = evaluatePrecision(10, relevance_judgments, System.in);
-        double v4 = evaluateRecall(1, relevance_judgments, System.in);
-        double v5 = evaluateRecall(5, relevance_judgments, System.in);
-        double v6 = evaluateRecall(10, relevance_judgments, System.in);
-        double v7 = evaluateFMeasure(1, relevance_judgments, 0.5, System.in);
-        double v8 = evaluateFMeasure(5, relevance_judgments, 0.5, System.in);
-        double v9 = evaluateFMeasure(10, relevance_judgments, 0.5, System.in);
-        double v10 = evaluateAveragePrecision(relevance_judgments, System.in);
-        double v11 = evaluateNDCG(1, relevance_judgments, System.in);
-        double v12 = evaluateNDCG(5, relevance_judgments, System.in);
-        double v13 = evaluateNDCG(10, relevance_judgments, System.in);
-        double v14 = evaluateReciprocalRank(relevance_judgments, System.in);
 
-        System.out.println(v1 +"\t" +  v2 +"\t" + v3+"\t" +v4+"\t" +v5+"\t" +v6+"\t" +v7+"\t" +v8+"\t" +v9+"\t"
-                +v10+"\t" +v11+"\t" +v12+"\t" +v13+"\t" +v14);
 
     }
 
@@ -53,7 +32,7 @@ class Evaluator {
             BufferedReader reader = new BufferedReader(new FileReader(p));
             try {
                 String line = null;
-                while ((line = reader.readLine()) != null){
+                while ((line = reader.readLine()) != null ){
                     // parse the query,did,relevance line
                     Scanner s = new Scanner(line).useDelimiter("\t");
                     String query = s.next();
@@ -85,13 +64,13 @@ class Evaluator {
                     if (relevance_judgments.containsKey(query) == false){
                         HashMap < Integer , Double > qr = new HashMap < Integer , Double >();
                         relevance_judgments.put(query,qr);
-                        relevance_judgments_2.put(query,qr);
+                        HashMap < Integer , Double > qr2 = new HashMap < Integer , Double >();
+                        relevance_judgments_2.put(query,qr2);
                     }
                     HashMap < Integer , Double > qr = relevance_judgments.get(query);
                     qr.put(did,rel);
-                    qr=relevance_judgments_2.get(query);
-                    qr.put(did, rel2);
-
+                    HashMap < Integer , Double > qr2 = relevance_judgments_2.get(query);
+                    qr2.put(did, rel2);
                 }
             } finally {
                 reader.close();
@@ -102,21 +81,29 @@ class Evaluator {
     }
 
     public static void evaluateStdin(
-            HashMap < String , HashMap < Integer , Double > > relevance_judgments, InputStream path){
+            HashMap < String , HashMap < Integer , Double > > relevance_judgments, HashMap < String ,
+            HashMap < Integer , Double > > relevance_judgments_2, InputStream path){
         // only consider one query per call
-
+        StringBuffer input = new StringBuffer();
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(path));
 
             String line = null;
             double RR = 0.0;
             double N = 0.0;
-            while ((line = reader.readLine()) != null){
+            String query="";
+            StringBuffer output = new StringBuffer();
+            while ((line = reader.readLine()) != null && !line.equalsIgnoreCase("sanghavistop")){
+                input.append(line);
+                input.append("\n");
                 Scanner s = new Scanner(line).useDelimiter("\t");
-                String query = s.next();
+                query = s.next();
                 int did = Integer.parseInt(s.next());
                 String title = s.next();
                 double rel = Double.parseDouble(s.next());
+
+
+
                 if (relevance_judgments.containsKey(query) == false){
                     throw new IOException("query not found");
                 }
@@ -127,9 +114,44 @@ class Evaluator {
                 ++N;
             }
 
+            File file = new File (".//results/input-to-evaluator.tsv");
+            if (file.exists()) {
+                file.delete();
+            }
+            FileUtil.write("input-to-evaluator.tsv", input.toString());
             // CALL THE EVALUATORS
 
-            System.out.println(Double.toString(RR/N));
+            //System.out.println(Double.toString(RR/N));
+
+
+            double v1 = evaluatePrecision(1, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v2 = evaluatePrecision(5, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v3 = evaluatePrecision(10, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v4 = evaluateRecall(1, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v5 = evaluateRecall(5, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v6 = evaluateRecall(10, relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v7 = evaluateFMeasure(1, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
+            double v8 = evaluateFMeasure(5, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
+            double v9 = evaluateFMeasure(10, relevance_judgments, 0.5, "./results/input-to-evaluator.tsv");
+            HashMap<Double,Double> ss = evaluatePrecisionRecallGraph(relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v10 = evaluateAveragePrecision(relevance_judgments, "./results/input-to-evaluator.tsv");
+            double v11 = evaluateNDCG(1, relevance_judgments_2, "./results/input-to-evaluator.tsv");
+            double v12 = evaluateNDCG(5, relevance_judgments_2, "./results/input-to-evaluator.tsv");
+            double v13 = evaluateNDCG(10, relevance_judgments_2, "./results/input-to-evaluator.tsv");
+            double v14 = evaluateReciprocalRank(relevance_judgments, "./results/input-to-evaluator.tsv");
+
+            System.out.println(v1 +"\t" +  v2 +"\t" + v3+"\t" +v4+"\t" +v5+"\t" +v6+"\t" +v7+"\t" +v8+"\t" +v9+"\t"
+                    +v10+"\t" +v11+"\t" +v12+"\t" +v13+"\t" +v14);
+
+            output.append(query+"\t");
+            output.append(v1 +"\t" +  v2 +"\t" + v3+"\t" +v4+"\t" +v5+"\t" +v6+"\t" +v7+"\t" +v8+"\t" +v9+"\t");
+            for(double i = 0.0; i <= 1.0; i = i + 0.1){
+                double t = ss.get(i);
+                output.append(t +"\t");
+            }
+            output.append(+v10+"\t" +v11+"\t" +v12+"\t" +v13+"\t" +v14);
+
+            FileUtil.write("output-file-please-rename.tsv", output.toString());
 
         } catch (Exception e){
             System.err.println("Error:" + e.getMessage());
@@ -138,10 +160,10 @@ class Evaluator {
 
 
     public static double evaluatePrecision(int k, HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                           InputStream path){
+                                           String path){
         double value = 0.0;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             int RR = 0;
             String readLineString = null;
             for(int i=0; i<k; i++){
@@ -155,21 +177,14 @@ class Evaluator {
                     throw new IOException("query not found");
                 }
                 HashMap<Integer,Double> qr = relevance_judgments.get(query);
-                if(qr.containsKey(did)){
+                if(qr.containsKey(did) && qr.get(did) == 1){
                     RR++;
                 }
-			/*
-			if (k == 0) {
-			    throw new IllegalArgumentException("Argument 'K' is 0");
-			}
-			value = (double)RR/k;
-			*/
-
-                if (k!=0) {
-                    value = (double)RR/k;
-                }
-
             }
+            if (k!=0) {
+                value = (double)RR/k;
+            }
+            reader.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -181,11 +196,11 @@ class Evaluator {
     }
 
     public static double evaluateRecall(int k, HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                        InputStream path){
+                                        String path){
         double value = 0.0;
         int countRelevance = 0;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             int RR = 0;
             String readLineString = null;
             for(int i=0; i<k; i++){
@@ -205,13 +220,14 @@ class Evaluator {
                         countRelevance++;
                     }
                 }
-                if(qr.containsKey(did)){
+                if(qr.containsKey(did) && qr.get(did) > 0.0){
                     RR++;
                 }
             }
             if(countRelevance != 0){
                 value = (double)RR/countRelevance;
             }
+            reader.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -223,7 +239,7 @@ class Evaluator {
     }
 
 
-    public static double evaluateFMeasure(int k,HashMap<String,HashMap<Integer,Double>> relJud, double lambda,  InputStream path){
+    public static double evaluateFMeasure(int k,HashMap<String,HashMap<Integer,Double>> relJud, double lambda,  String path){
         double result = 0.0;
         try{
             double precision = evaluatePrecision(k, relJud, path);
@@ -243,17 +259,16 @@ class Evaluator {
     }
 
     public static double evaluateAveragePrecision( HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                                   InputStream path){
+                                                   String path){
         double value = 0.0;
         double AP = 0.0;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             int RR = 0;
             int i=0;
-            String readLineString = null;
-            while(reader.readLine()!=null){
+            String readLineString = reader.readLine();
+            while(readLineString!=null){
                 i++;
-                readLineString = reader.readLine();
                 Scanner s = new Scanner(readLineString).useDelimiter("\t");
                 String query = s.next();
                 int did = s.nextInt();
@@ -262,8 +277,9 @@ class Evaluator {
                 if(!relevance_judgments.containsKey(query)){
                     throw new IOException("query not found");
                 }
+                readLineString = reader.readLine();
                 HashMap<Integer,Double> qr = relevance_judgments.get(query);
-                if(qr.containsKey(did)){
+                if(qr.containsKey(did) && qr.get(did) == 1.0){
                     RR++;
                     AP = AP + (double)RR/i;
                 }
@@ -271,9 +287,7 @@ class Evaluator {
             if(RR != 0){
                 value = (double)AP/RR;
             }
-
-
-
+            reader.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -285,9 +299,9 @@ class Evaluator {
     }
 
     public static double evaluateReciprocalRank( HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                                 InputStream path){
+                                                 String path){
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             int i=0;
             String readLineString = null;
             while(reader.readLine()!=null){
@@ -306,7 +320,7 @@ class Evaluator {
                     return reciprocal((double)i);
                 }
             }
-
+            reader.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -318,14 +332,14 @@ class Evaluator {
     }
 
     public static HashMap<Double,Double> evaluatePrecisionRecallGraph(HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                                                      InputStream path){
+                                                                      String path){
         double precision = 0.0;
         double recall = 0.0;
         int countRelevance = 0;
         HashMap<Double,Double> PR=new HashMap<Double,Double>();
         HashMap<Double,Double> value=new HashMap<Double,Double>();
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             int RR = 0;
             int K=1;
             String readLineString = null;
@@ -360,15 +374,16 @@ class Evaluator {
                 K++;
             }
 
-            for(double j=0.1;j<=1.0;j+=0.1){
+            for(double j=0.0;j<=1.0;j+=0.1){
                 double max=0.0;
                 for (double key : PR.keySet()) {
                     if((key>=j)&&(PR.get(key)>max)){
                         max=PR.get(key);
                     }
                 }
-                value.put(j,max);
+                value.put( j ,max);
             }
+            reader.close();
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -381,11 +396,11 @@ class Evaluator {
 
 
     public static double evaluateNDCG(int k, HashMap<String, HashMap<Integer,Double>> relevance_judgments_2,
-                                      InputStream path){
+                                      String path){
         double NDCG = 0.0;
         List<Double> relevance = new ArrayList<Double>();
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
+            BufferedReader reader = new BufferedReader(new FileReader(path));
             double DCG = 0.0;
             String readLineString = null;
             for(int i=0; i<k; i++){
@@ -427,6 +442,8 @@ class Evaluator {
             if (IDCG != 0.0)
                 NDCG = DCG / IDCG;
 
+            reader.close();
+
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -437,57 +454,60 @@ class Evaluator {
         return NDCG;
     }
 
-
-    /**
-     * MY VERSION OF PRECISION RECALL. WE CAN CHECK IF RESULTS FROM THIS ARE SAME AS THE ABOVE METHOD.
-     * @param relevance_judgments
-     * @param path
-     * @return
-     */
-    public static HashMap<Double,Double> evaluatePrecisionRecallGraph_MINE(HashMap<String, HashMap<Integer,Double>> relevance_judgments,
-                                                                           InputStream path){
-        double precision = 0.0;
-        double recall = 0.0;
-        int countRelevance = 0;
-        HashMap<Double,Double> PR=new HashMap<Double,Double>();
-        HashMap<Double,Double> value=new HashMap<Double,Double>();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(path));
-            int RR = 0;
-            int K=0;
-            String readLineString = null;
-            while(reader.readLine()!=null){
-                K++;
-                readLineString=reader.readLine();
-                precision = evaluatePrecision(K, relevance_judgments, path);
-                recall = evaluateRecall(K, relevance_judgments, path);
-
-                if(!PR.containsKey(recall)){
-                    PR.put(recall, precision);
-                    if(recall==1.0){
-                        break;
-                    }
-                }
-            }
-
-            for(double j=0.1;j<=1.0;j+=0.1){
-                double max=0.0;
-                for (double key : PR.keySet()) {
-                    if((key>=j)&&(PR.get(key)>max)){
-                        max=PR.get(key);
-                    }
-                }
-                value.put(j,max);
-            }
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return value;
-    }
+//
+//    /**
+//     * MY VERSION OF PRECISION RECALL. WE CAN CHECK IF RESULTS FROM THIS ARE SAME AS THE ABOVE METHOD.
+//     * @param relevance_judgments
+//     * @param path
+//     * @return
+//     */
+//    public static HashMap<Double,Double> evaluatePrecisionRecallGraph_MINE(HashMap<String, HashMap<Integer,Double>> relevance_judgments,
+//                                                                           String path){
+//        double precision = 0.0;
+//        double recall = 0.0;
+//        int countRelevance = 0;
+//        HashMap<Double,Double> PR=new HashMap<Double,Double>();
+//        HashMap<Double,Double> value=new HashMap<Double,Double>();
+//        try {
+//            BufferedReader reader = new BufferedReader(new FileReader(path));
+//            int RR = 0;
+//            int K=0;
+//            String readLineString = null;
+//            while(reader.readLine()!=null){
+//                K++;
+//                readLineString=reader.readLine();
+//                precision = evaluatePrecision(K, relevance_judgments, path);
+//                recall = evaluateRecall(K, relevance_judgments, path);
+//
+//                if(!PR.containsKey(recall)){
+//                    PR.put(recall, precision);
+//                    if(recall==1.0){
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            for(double j=0.1;j<=1.0;j+=0.1){
+//                double max=0.0;
+//                for (double key : PR.keySet()) {
+//                    if((key>=j)&&(PR.get(key)>max)){
+//                        max=PR.get(key);
+//                    }
+//                }
+//                value.put(j,max);
+//            }
+//
+//            reader.close();
+//
+//        } catch (FileNotFoundException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        return value;
+//    }
 
 
 }
