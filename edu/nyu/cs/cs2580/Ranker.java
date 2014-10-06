@@ -11,6 +11,10 @@ class Ranker {
         _index = new Index(index_source);
     }
 
+    public Document getDocument(int did) {
+        return _index.getDoc(did);
+    }
+
     public Vector<ScoredDocument> runquery(String query) {
         Vector<ScoredDocument> retrieval_results = new Vector<ScoredDocument>();
         for (int i = 0; i < _index.numDocs(); ++i) {

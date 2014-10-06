@@ -1,6 +1,7 @@
 package edu.nyu.cs.cs2580;
 
 import java.io.*;
+import java.util.Vector;
 
 public class FileUtil {
 
@@ -9,8 +10,17 @@ public class FileUtil {
    // public FileUtil()
     static{
         rootPath = "./results/";
-         File file = new File(rootPath);
+        File file = new File(rootPath);
 
+        File logs = new File(rootPath+"hw1.4-log");
+
+        if(!logs.exists()) {
+            try {
+                logs.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         //Create the path if the path does not exist
         if(!file.exists()) {
             file.mkdirs();
@@ -45,6 +55,31 @@ public class FileUtil {
             bufferWriter.write(results);
             bufferWriter.close();
         }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    //For Render Logging
+    public void writeRenderLogs(int sessionId, String query, Vector<ScoredDocument> documents){
+        try {
+            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log",true));
+            for(ScoredDocument doc : documents){
+                String line = sessionId+"\t"+query+"\t"+doc._did+"\t"+"RENDER"+"\t"+System.currentTimeMillis()+"ms\r\n";
+                bufferWriter.append(line);
+            }
+            bufferWriter.flush();
+            bufferWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void writeClickLogs(String line) {
+        try{
+            BufferedWriter bufferWriter = new BufferedWriter(new FileWriter(rootPath+"hw1.4-log",true));
+            bufferWriter.append(line);
+            bufferWriter.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

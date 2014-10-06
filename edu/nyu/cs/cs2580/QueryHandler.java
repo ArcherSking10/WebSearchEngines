@@ -94,7 +94,11 @@ class QueryHandler implements HttpHandler {
                        sds = _ranker.runquery(query_map.get("query"));
                     }
 
+                    //Write ranker output to file
                     FileUtil.write(fileName, queryResponse);
+
+                    //Write render details to log file
+                    new FileUtil().writeRenderLogs(sessionId, query_map.get("query"), sds);
 
                     if(keys.contains("format") && query_map.get("format").equals("html")) {
                         String response = HtmlOutput.getResponse(sds, query_map.get("query"), sessionId);
@@ -104,7 +108,28 @@ class QueryHandler implements HttpHandler {
                         queryResponse = queryResponseGenerator(sds, query_map.get("query"));
                     }
                 }
+            } else if(uriPath.equals("/url")) {
+                Map<String, String> query_map = getQueryMap(uriQuery);
+                int sessionId = 0, did = 0;
+                String query=null;
 
+                if(query_map.containsKey("sessionId")&&query_map.containsKey("did")&&query_map.containsKey("query")){
+                    Document d = _ranker.getDocument(did);
+                    sessionId = Integer.parseInt(query_map.get("sessionId"), 32);
+                    did = Integer.parseInt(query_map.get("did"), 32);
+                    query = query_map.get("query").replace("+", " ");
+                    String line=sessionId+"\t"+query+"\t"+did+"\t"+"CLICK"+"\t"+System.currentTimeMillis();
+                    new FileUtil().writeClickLogs(line+"\n");
+
+                    queryResponse = line+"\n\n";
+
+                    queryResponse+="Title\n"+d.get_title_string()+"\n\n";
+                    String body="";
+                    for(String terms : d.get_body_vector()){
+                        body+=terms+" ";
+                    }
+                    queryResponse+="Body\n"+body+"\n";
+                }
 
             }
         }
